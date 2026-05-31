@@ -5,6 +5,8 @@ services:
       dockerfile: backend/Dockerfile
     ports:
       - "8000:8000"
+    environment:
+      DB_DSN: postgresql://user:password@postgres:5432/db
 
   frontend:
     build:
