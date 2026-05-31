@@ -36,5 +36,6 @@ CREATE TABLE IF NOT EXISTS event_geometry (
     latitude DOUBLE PRECISION,
     event_date TIMESTAMP NOT NULL,
     magnitude_value DOUBLE PRECISION,
-    magnitude_unit TEXT
+    magnitude_unit TEXT,
+    UNIQUE(event_id, event_date)
 );
