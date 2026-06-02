@@ -1,19 +1,13 @@
-from fastapi import FastAPI, Query, HTTPException
+import logging
+from fastapi import FastAPI
 from backend.backend_cataclism import router as cataclism_router
+from backend.backend_weather import router as weather_router
 from backend.database import init_db
-#from backend.weather_service import WeatherService
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = FastAPI()
 init_db()
 app.include_router(cataclism_router)
-""""
-weather = WeatherService()
-@app.get("/weather")
-async def get_weather(latitude: float,longitude: float,start_date: str,end_date: str):
-    try:
-        return await weather.get_weather_info(latitude, longitude, start_date, end_date)
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=str(e))
-from fastapi import FastAPI
-
-"""
-
+app.include_router(weather_router)

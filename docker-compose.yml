@@ -7,6 +7,9 @@ services:
       - "8000:8000"
     environment:
       DB_DSN: postgresql://user:password@postgres:5432/db
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
@@ -29,5 +32,10 @@ services:
       - "5432:5432"
     volumes:
         - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 volumes:
   pgdata:
