@@ -1,0 +1,20 @@
+services:
+  backend:
+    command: python -m pytest tests/ -v
+    environment:
+      DB_DSN: postgresql://user:password@postgres:5432/test_db
+      LOG_LEVEL: INFO
+
+  frontend:
+    profiles:
+      - donotstart
+
+  postgres:
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: test_db
+    volumes: []
+
+volumes:
+  pgdata: null

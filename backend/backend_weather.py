@@ -8,7 +8,7 @@ _weather = WeatherService()
 
 
 @router.get("/weather")
-async def get_weather(latitude: float, longitude: float, event_date: str = None):
+async def get_weather(latitude: float, longitude: float, event_date: str):
     try:
         return await _weather.get_weather_info(latitude, longitude, event_date)
     except Exception as e:

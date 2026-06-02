@@ -2,6 +2,7 @@ import logging
 import os
 from datetime import date, timedelta
 
+import altair as alt
 import pandas as pd
 import pydeck as pdk
 import requests
@@ -100,20 +101,12 @@ class Main:
             resp.raise_for_status()
             data = resp.json()
 
-            if "daily" in data:
-                d = data["daily"]
-                temp     = (d.get("temperature_2m_max") or [None])[0]
-                precip   = (d.get("precipitation_sum") or [None])[0]
-                wind     = (d.get("wind_speed_10m_max") or [None])[0]
-                radiation = (d.get("shortwave_radiation_sum") or [None])[0]
-                rad_unit = "MJ/m²"
-            else:
-                c = data.get("current", {})
-                temp      = c.get("temperature_2m")
-                precip    = c.get("precipitation")
-                wind      = c.get("wind_speed_10m")
-                radiation = c.get("shortwave_radiation")
-                rad_unit  = "W/m²"
+            d = data.get("daily", {})
+            temp      = (d.get("temperature_2m_max") or [None])[0]
+            precip    = (d.get("precipitation_sum") or [None])[0]
+            wind      = (d.get("wind_speed_10m_max") or [None])[0]
+            radiation = (d.get("shortwave_radiation_sum") or [None])[0]
+            rad_unit  = "MJ/m²"
 
             col1, col2, col3, col4 = st.columns(4)
             with col1:
@@ -147,10 +140,23 @@ class Main:
             dates = data.get("dates", [])
             temps = data.get("temperatures", [])
             if dates and temps:
-                df = pd.DataFrame({"Temperatura (°C)": temps}, index=pd.to_datetime(dates))
+                df = pd.DataFrame({"date": pd.to_datetime(dates), "Temperatura (°C)": temps})
+                fire_dt = pd.to_datetime(event_date[:10])
+
+                temp_line = alt.Chart(df).mark_line(color="#ff5000").encode(
+                    x=alt.X("date:T", title="Data"),
+                    y=alt.Y("Temperatura (°C):Q", title="Temperatura (°C)"),
+                    tooltip=["date:T", "Temperatura (°C):Q"],
+                )
+                fire_rule = alt.Chart(
+                    pd.DataFrame({"fire": [fire_dt]})
+                ).mark_rule(color="red", strokeDash=[6, 4], strokeWidth=2).encode(
+                    x="fire:T",
+                )
+
                 st.subheader("Temperatura dzienna")
-                st.caption(f"Zakres: {start} - {end}")
-                st.line_chart(df)
+                st.caption(f"Zakres: {start} → {end}  ·  — czerwona linia = moment pożaru")
+                st.altair_chart(temp_line + fire_rule, use_container_width=True)
         except Exception as e:
             logger.error("Temperature chart error: %s", e)
             st.warning(f"Nie można pobrać historii temperatury: {e}")

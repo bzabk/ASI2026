@@ -1,0 +1,15 @@
+services:
+  backend:
+    command: uvicorn backend.backend:app --reload --host 0.0.0.0 --port 8000
+    volumes:
+      - ./backend:/app/backend
+    environment:
+      DB_DSN: postgresql://user:password@postgres:5432/db
+      LOG_LEVEL: DEBUG
+
+  frontend:
+    volumes:
+      - ./frontend:/app/frontend
+    environment:
+      API_URL: http://backend:8000
+      STREAMLIT_SERVER_RUN_ON_SAVE: "true"

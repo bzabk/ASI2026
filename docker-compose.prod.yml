@@ -1,0 +1,19 @@
+services:
+  backend:
+    restart: always
+    environment:
+      DB_DSN: postgresql://user:password@postgres:5432/db
+      LOG_LEVEL: WARNING
+
+  frontend:
+    restart: always
+    environment:
+      API_URL: http://backend:8000
+
+  postgres:
+    restart: always
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+
+volumes:
+  pgdata_prod:
