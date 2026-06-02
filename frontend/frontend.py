@@ -18,17 +18,6 @@ st.title("Mapa pożarów")
 def prepare_map():
     st.caption("Mapa prezentuje miejsca pożarów z ostatnich 30 dni.")
 
-    #load the data
-    if st.button("Odśwież dane z API"):
-        with st.spinner("Pobieranie danych..."):
-            try:
-                resp = requests.post(f"{API_URL}/archive", timeout=60)
-                resp.raise_for_status()
-                st.success(f"Załadowano {resp.json().get('inserted', '?')} zdarzeń")
-            except Exception as e:
-                logger.error("Refresh failed: %s", e)
-                st.error(f"Błąd odświeżania: {e}")
-
     # getting wildfires points
     points = []
     try:
@@ -36,7 +25,7 @@ def prepare_map():
         resp.raise_for_status()
         points = resp.json()
     except Exception as e:
-        logger.error("Map data fetch failed: %s", e)
+        logger.error("Błąd pobierania danych mapy: %s", e)
         st.warning(f"Nie można pobrać danych mapy: {e}")
 
     if not points:
@@ -115,7 +104,7 @@ def prepare_metrics():
 
         prepare_temperature_chart(point, data.get("history", {}))
     except Exception as e:
-        logger.error("Weather fetch error: %s", e)
+        logger.error("Błąd pobierania danych pogodowych: %s", e)
         st.warning(f"Nie można pobrać danych pogodowych: {e}")
 
 
@@ -149,7 +138,7 @@ def prepare_temperature_chart(point: dict, history: dict):
         st.caption(f"Zakres: {start} → {end}  ·  — czerwona linia = moment pożaru")
         st.altair_chart(temp_line + fire_rule, use_container_width=True)
     except Exception as e:
-        logger.error("Temperature chart error: %s", e)
+        logger.error("Błąd pobierania historii temperatury: %s", e)
         st.warning(f"Nie można pobrać historii temperatury: {e}")
 
 

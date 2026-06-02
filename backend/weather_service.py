@@ -19,7 +19,7 @@ class WeatherService:
             "start_date": day,
             "end_date":   day,
         }
-        logger.info("Fetching archive weather lat=%s lon=%s date=%s", latitude, longitude, day)
+        logger.debug("Pobieranie pogody archiwalnej lat=%s lon=%s data=%s", latitude, longitude, day)
         async with httpx.AsyncClient(timeout=10) as client:
             resp = await client.get(ARCHIVE_URL, params=params)
             resp.raise_for_status()
@@ -34,7 +34,7 @@ class WeatherService:
             "start_date": start_date,
             "end_date":   end_date,
         }
-        logger.info("Fetching temperature history lat=%s lon=%s %s..%s", latitude, longitude, start_date, end_date)
+        logger.debug("Pobieranie historii temperatury lat=%s lon=%s %s..%s", latitude, longitude, start_date, end_date)
         async with httpx.AsyncClient(timeout=15) as client:
             resp = await client.get(ARCHIVE_URL, params=params)
             resp.raise_for_status()

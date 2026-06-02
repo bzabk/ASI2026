@@ -9,7 +9,7 @@ router = APIRouter()
 _weather = WeatherService()
 
 
-@router.get("/weather")
+@router.get("/weather",response_model=dict)
 async def get_weather(latitude: float, longitude: float, event_date: str):
     try:
         day = event_date[:10]
@@ -25,5 +25,5 @@ async def get_weather(latitude: float, longitude: float, event_date: str):
             "history": history,
         }
     except Exception as e:
-        logger.error("Weather fetch failed: %s", e)
+        logger.error("Błąd pobierania danych pogodowych: %s", e)
         raise HTTPException(status_code=502, detail=str(e))

@@ -8,14 +8,20 @@ router = APIRouter()
 c_service = CataclismService()
 
 
-@router.get("/fires")
+@router.get("/fires", response_model=list[dict])
 async def get_fires():
-    events = await c_service.fetch_events()
-    return extract_map_points(events)
+    try:
+        events = await c_service.fetch_events()
+        points = extract_map_points(events)
+        c_service.save(points)
+        return points
+    except Exception as e:
+        logger.error("Błąd pobierania pożarów z EONET: %s", e)
+        raise
 
 
 @router.post("/archive")
 async def archive():
     result = await c_service.archive_events()
-    logger.info("Archive done: %s", result)
+    logger.info("Archiwizacja zakończona: %s", result)
     return result

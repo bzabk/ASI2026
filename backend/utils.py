@@ -12,7 +12,7 @@ def extract_map_points(events: list[dict]) -> list[dict]:
                 "title":      event["title"],
                 "latitude":   lat,
                 "longitude":  lon,
-                "event_date": geom.get("date", ""),
+                "event_date": geom.get("date", "").replace("T", " ").replace("Z", " UTC"),
             }
     return list(points.values())
 

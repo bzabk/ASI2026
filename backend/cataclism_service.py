@@ -14,7 +14,7 @@ class CataclismService:
             response = await client.get(url, params=params)
         response.raise_for_status()
         parsed = [parse_eonet_event(e) for e in response.json().get("events", [])]
-        logger.info("EONET returned %d wildfire events", len(parsed))
+        logger.info("EONET zwrócił %d zdarzeń pożarowych", len(parsed))
         return parsed
 
     def save(self, points: list):
@@ -38,5 +38,5 @@ class CataclismService:
         events = await self.fetch_events()
         points = extract_map_points(deduplicate_events(events))
         self.save(points)
-        logger.info("Archive complete: %d events", len(points))
+        logger.info("Archiwizacja zakończona: %d zdarzeń", len(points))
         return {"inserted": len(points), "status": "saved"}
