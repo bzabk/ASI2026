@@ -71,7 +71,7 @@ def prepare_metrics():
     point = st.session_state.get("selected_point")
 
     if not point:
-        st.info("Kliknij pożar na mapie aby zobaczyć aktualne warunki pogodowe.")
+        st.info("Kliknij pożar na mapie aby zobaczyć warunki pogodowe z dnia zdarzenia.")
         return
 
     event_date = point.get("event_date", "")
