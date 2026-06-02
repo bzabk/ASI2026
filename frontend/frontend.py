@@ -27,7 +27,7 @@ class Main:
                     resp = requests.post(f"{API_URL}/refresh-dis", timeout=60)
                     resp.raise_for_status()
                     result = resp.json()
-                    st.success(f"Zsynchronizowano {result.get('inserted', '?')} zdarzeń")
+                    st.success(f"Załadowano {result.get('inserted', '?')} zdarzeń")
                 except Exception as e:
                     logger.error("Refresh failed: %s", e)
                     st.error(f"Błąd odświeżania: {e}")
