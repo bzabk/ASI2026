@@ -8,14 +8,14 @@ router = APIRouter()
 c_service = CataclismService()
 
 
-@router.get("/disasters/map")
-async def get_disasters_map():
+@router.get("/fires")
+async def get_fires():
     events = await c_service.fetch_events()
     return extract_map_points(events)
 
 
-@router.post("/refresh-dis")
-async def refresh_dis():
-    result = await c_service.sync_events()
-    logger.info("Sync done: %s", result)
+@router.post("/archive")
+async def archive():
+    result = await c_service.archive_events()
+    logger.info("Archive done: %s", result)
     return result

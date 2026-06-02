@@ -1,4 +1,6 @@
+import asyncio
 import logging
+from datetime import date, timedelta
 from fastapi import APIRouter, HTTPException
 from backend.weather_service import WeatherService
 
@@ -10,16 +12,18 @@ _weather = WeatherService()
 @router.get("/weather")
 async def get_weather(latitude: float, longitude: float, event_date: str):
     try:
-        return await _weather.get_weather_info(latitude, longitude, event_date)
+        day = event_date[:10]
+        start = (date.fromisoformat(day) - timedelta(days=30)).isoformat()
+        end = date.today().isoformat()
+
+        metrics, history = await asyncio.gather(
+            _weather.get_weather_info(latitude, longitude, event_date),
+            _weather.get_temperature_history(latitude, longitude, start, end),
+        )
+        return {
+            "daily":   metrics.get("daily", {}),
+            "history": history,
+        }
     except Exception as e:
         logger.error("Weather fetch failed: %s", e)
-        raise HTTPException(status_code=502, detail=str(e))
-
-
-@router.get("/weather/history")
-async def get_weather_history(latitude: float, longitude: float, start_date: str, end_date: str):
-    try:
-        return await _weather.get_temperature_history(latitude, longitude, start_date, end_date)
-    except Exception as e:
-        logger.error("Weather history fetch failed: %s", e)
         raise HTTPException(status_code=502, detail=str(e))

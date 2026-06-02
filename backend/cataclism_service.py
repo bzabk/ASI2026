@@ -21,7 +21,6 @@ class CataclismService:
         conn = get_conn()
         try:
             with conn.cursor() as cursor:
-                cursor.execute("DELETE FROM wildfire_events")
                 for p in points:
                     cursor.execute(
                         """
@@ -35,9 +34,9 @@ class CataclismService:
         finally:
             conn.close()
 
-    async def sync_events(self):
+    async def archive_events(self):
         events = await self.fetch_events()
         points = extract_map_points(deduplicate_events(events))
         self.save(points)
-        logger.info("Sync complete: %d events", len(points))
-        return {"inserted": len(points), "status": "synced"}
+        logger.info("Archive complete: %d events", len(points))
+        return {"inserted": len(points), "status": "saved"}
