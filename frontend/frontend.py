@@ -1,6 +1,8 @@
 import logging
 import os
+from datetime import date, timedelta
 
+import pandas as pd
 import pydeck as pdk
 import requests
 import streamlit as st
@@ -20,6 +22,7 @@ class Main:
         self._prepare_metrics()
 
     def _prepare_map(self) -> None:
+        st.caption("Mapa prezentuje miejsca pożarów z ostatnich 30 dni.")
 
         if st.button("Odśwież dane z API"):
             with st.spinner("Pobieranie danych..."):
@@ -70,9 +73,10 @@ class Main:
         if selected:
             point = selected[0]
             st.session_state["selected_point"] = {
-                "lat": point.get("latitude"),
-                "lon": point.get("longitude"),
-                "title": point.get("title", ""),
+                "lat":        point.get("latitude"),
+                "lon":        point.get("longitude"),
+                "title":      point.get("title", ""),
+                "event_date": point.get("event_date", ""),
             }
         elif "selected_point" not in st.session_state:
             st.session_state["selected_point"] = None
@@ -85,20 +89,31 @@ class Main:
             st.info("Kliknij pożar na mapie aby zobaczyć aktualne warunki pogodowe.")
             return
 
-        st.caption(f"Lokalizacja: **{point['title']}**")
+        event_date = point.get("event_date", "")
+        date_label = event_date[:10] if event_date else ""
+        st.caption(f"Lokalizacja: **{point['title']}**" + (f" · {date_label}" if date_label else ""))
         try:
-            resp = requests.get(
-                f"{API_URL}/weather",
-                params={"latitude": point["lat"], "longitude": point["lon"]},
-                timeout=10,
-            )
+            params = {"latitude": point["lat"], "longitude": point["lon"]}
+            if event_date:
+                params["event_date"] = event_date
+            resp = requests.get(f"{API_URL}/weather", params=params, timeout=10)
             resp.raise_for_status()
-            current = resp.json().get("current", {})
+            data = resp.json()
 
-            temp = current.get("temperature_2m")
-            precip = current.get("precipitation")
-            wind = current.get("wind_speed_10m")
-            radiation = current.get("shortwave_radiation")
+            if "daily" in data:
+                d = data["daily"]
+                temp     = (d.get("temperature_2m_max") or [None])[0]
+                precip   = (d.get("precipitation_sum") or [None])[0]
+                wind     = (d.get("wind_speed_10m_max") or [None])[0]
+                radiation = (d.get("shortwave_radiation_sum") or [None])[0]
+                rad_unit = "MJ/m²"
+            else:
+                c = data.get("current", {})
+                temp      = c.get("temperature_2m")
+                precip    = c.get("precipitation")
+                wind      = c.get("wind_speed_10m")
+                radiation = c.get("shortwave_radiation")
+                rad_unit  = "W/m²"
 
             col1, col2, col3, col4 = st.columns(4)
             with col1:
@@ -108,7 +123,34 @@ class Main:
             with col3:
                 st.metric("Wiatr", f"{wind} km/h" if wind is not None else "—")
             with col4:
-                st.metric("Nasłonecznienie", f"{radiation} W/m²" if radiation is not None else "—")
+                st.metric("Nasłonecznienie", f"{radiation} {rad_unit}" if radiation is not None else "—")
         except Exception as e:
             logger.error("Weather metrics error: %s", e)
             st.warning(f"Nie można pobrać danych pogodowych: {e}")
+
+        self._prepare_temperature_chart(point)
+
+    def _prepare_temperature_chart(self, point: dict) -> None:
+        event_date = point.get("event_date", "")
+        if not event_date:
+            return
+        try:
+            start = (date.fromisoformat(event_date[:10]) - timedelta(days=30)).isoformat()
+            end = date.today().isoformat()
+            resp = requests.get(
+                f"{API_URL}/weather/history",
+                params={"latitude": point["lat"], "longitude": point["lon"], "start_date": start, "end_date": end},
+                timeout=15,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            dates = data.get("dates", [])
+            temps = data.get("temperatures", [])
+            if dates and temps:
+                df = pd.DataFrame({"Temperatura (°C)": temps}, index=pd.to_datetime(dates))
+                st.subheader("Temperatura dzienna")
+                st.caption(f"Zakres: {start} - {end}")
+                st.line_chart(df)
+        except Exception as e:
+            logger.error("Temperature chart error: %s", e)
+            st.warning(f"Nie można pobrać historii temperatury: {e}")
