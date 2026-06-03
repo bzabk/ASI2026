@@ -20,8 +20,3 @@ async def get_fires():
         raise
 
 
-@router.post("/archive")
-async def archive():
-    result = await c_service.archive_events()
-    logger.info("Archiwizacja zakończona: %s", result)
-    return result

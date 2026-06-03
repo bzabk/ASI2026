@@ -34,9 +34,3 @@ class CataclismService:
         finally:
             conn.close()
 
-    async def archive_events(self):
-        events = await self.fetch_events()
-        points = extract_map_points(deduplicate_events(events))
-        self.save(points)
-        logger.info("Archiwizacja zakończona: %d zdarzeń", len(points))
-        return {"inserted": len(points), "status": "saved"}
