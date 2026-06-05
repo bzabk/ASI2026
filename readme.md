@@ -1,6 +1,6 @@
 # Architekruta Systemów Informatycznych 2026
 
-Zespół: Bartosz Ząbkowski Ola Choszczyk
+Zespół: Bartosz Ząbkowski Aleksandra Choszczyk
 
 
 Projekty prezentuje aplikację mobilną która miała za zadanie odpowiedzieć na pytanie czy obecność pożaru w danym miejscu na świecie wpływa na
@@ -23,4 +23,27 @@ wywołane pożarem.
 ## Architektura rozwiązania 
 
 ![Container Diagram](Container_diagram.jpg)
+
+## Podział pracy:
+
+1) Bartosz Ząbkowski - OpenMeteo Backend, frontend(streamlit), docker
+2) Aleksandra Choszczyk - testy jednostkowe, obciążeniowe, baza danych, backend EONET
+
+
+## Uruchamianie aplikacji
+
+
+```bash
+docker compose up --build
+```
+
+
+### Adresy po uruchomieniu
+
+| Serwis | URL |
+|--------|-----|
+| Frontend | http://localhost:8501 |
+| Backend | http://localhost:8000 |
+| Swagger | http://localhost:8000/docs |
+| PostgreSQL | localhost:5432 |
 
